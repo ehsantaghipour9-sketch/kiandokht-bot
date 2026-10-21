@@ -8,8 +8,20 @@ app = Flask(__name__)
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "").strip()
 SHEET_ID = os.environ.get("SHEET_ID", "").strip()
+RENDER_URL = os.environ.get("RENDER_EXTERNAL_URL", "").strip()
 
 BALE_API = f"https://tapi.bale.ai/bot{BOT_TOKEN}"
+
+# تنظیم خودکار وب‌هوک هنگام شروع برنامه
+def setup_webhook():
+    if RENDER_URL:
+        webhook_url = f"{RENDER_URL}/webhook"
+        url = f"{BALE_API}/setWebhook?url={webhook_url}"
+        try:
+            requests.get(url, timeout=10)
+            print(f"Webhook set to: {webhook_url}")
+        except Exception as e:
+        print(f"Error setting webhook: {e}")
 
 def send_message(chat_id, text):
     url = f"{BALE_API}/sendMessage"
@@ -84,4 +96,5 @@ def webhook():
     return jsonify({"status": "ok"}), 200
 
 if __name__ == "__main__":
+    setup_webhook()
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
